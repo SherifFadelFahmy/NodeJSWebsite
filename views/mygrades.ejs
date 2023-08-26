@@ -1,0 +1,10 @@
+<%- include('partials/start.ejs') %>
+    <section class="owner-section">
+      <h2>Student Grades</h2>
+ 		<form method="POST" action="/mygradesare">
+    			<label for="studentId">Student ID:</label>
+    			<input type="text" id="studentId" name="studentId" required>
+    			<button type="submit">Retrieve Grades</button>
+  		</form>
+    </section>
+  <%- include('partials/end.ejs') %>

@@ -1,0 +1,11 @@
+<%- include('partials/start.ejs') %>
+    <section class="owner-section"
+    <h2>Upload your grades excel file</h2>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="uploadedfile" accept=".xlsx">
+        <input type="submit" value="Upload">
+    </form>
+    </section>
+</body>
+</html>
+
