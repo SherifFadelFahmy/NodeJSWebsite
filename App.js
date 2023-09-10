@@ -5,7 +5,14 @@ const path = require('path');
 const multer = require('multer');
 const XLSX = require('xlsx');
 const urlencoded = require('body-parser/lib/types/urlencoded');
+const {Sequelize, DataTypes} = require('sequelize');
 
+const sequelize = new Sequelize('test', 'root', '', {
+    host: 'localhost',
+    dialect: 'mysql',
+  });
+  
+const hehe = require('./models/people.js')(sequelize,DataTypes);
 
 app = express();
 const upload = multer();
@@ -21,6 +28,20 @@ if (number >= entry - 1 && number < entry) return true;
   }
   return false;
 }
+
+async function initializeDatabase() {
+    try {
+      await sequelize.authenticate();
+      console.log('Connected to the database.');
+  
+      // Sync the models with the database (create tables if they don't exist)
+      await sequelize.sync();
+  
+      console.log('Database synchronization complete.');
+    } catch (error) {
+      console.error('Database connection error:', error);
+    }
+  }
 
 function processRows(data) {
   let result = '';
@@ -200,8 +221,65 @@ app.post('/mygradesare',(req, res) => {
     getMyGrades(dataFrame.studentId,data,res);
   });
 
+app.get('/test',(req,res,next) => {
+    res.send(`<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Name Input Form</title>
+    </head>
+    <body>
+        <h1>Enter Your Name</h1>
+        <form action="/doitnow" method="POST">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <br><br>
+            <input type="submit" value="Submit">
+        </form>
+    </body>
+    </html>
+    `)
+})
+
+
+app.post('/doitnow',(req,res,next) => {
+    // Define the name you want to search for
+    const targetName = req.body.name; // Replace with the name you're searching for
+    //console.log(hehe);
+
+    // Use the `findAll` method with the `where` option to search for the name
+    const Op = Sequelize.Op;
+
+    hehe.findAll({
+    where: {
+        first_name: {
+        [Op.like]: `%`+targetName+`%`, // Assuming 'username' is the column where you want to search
+        }
+    },
+    })
+  .then((foundUsers) => {
+    if (foundUsers.length === 0) {
+      console.log('No users found with the name:', targetName);
+    } else {
+      result = 'Users found with the name:'+ targetName+'<br>';
+      foundUsers.forEach((user) => {
+        data = user.toJSON();
+        for (const key of Object.keys(data)) {
+            result = result +`${key} = ${data[key]}<br>`;
+        }
+     });
+      res.send(result);
+    }
+  })
+  .catch((error) => {
+    console.error('Error searching for users:', error);
+  });
+
+})
+
 app.use((req,res,next) => {
     res.status(404).render('404', {pageTitle:"Page Not Found"});
 })
+
+initializeDatabase();
 
 app.listen(3000);
